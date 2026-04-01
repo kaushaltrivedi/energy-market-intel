@@ -1,0 +1,32 @@
+# =============================================================================
+# Prompt CI — runs promptfoo regression tests when prompts change
+# =============================================================================
+
+name: Prompt CI
+
+on:
+  push:
+    paths:
+      - 'packages/llm-core/llm_core/prompts/**'
+      - 'promptfooconfig.yaml'
+  pull_request:
+    paths:
+      - 'packages/llm-core/llm_core/prompts/**'
+      - 'promptfooconfig.yaml'
+
+jobs:
+  prompt-regression:
+    name: Prompt Regression Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install promptfoo
+        run: npm install -g promptfoo
+
+      - name: Run prompt regression tests
+        run: promptfoo eval --config promptfooconfig.yaml --no-cache
+        env:
+          # Use a dedicated low-cost model for CI prompt testing
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY_CI }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}

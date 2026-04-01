@@ -1,0 +1,19 @@
+# CODEOWNERS — Defines required reviewers for specific paths
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+* @kaushaltrivedi
+
+# Shared packages require AI lead review — these are foundational
+packages/ @kaushaltrivedi
+
+# Security-sensitive files
+.env.example @kaushaltrivedi
+.gitleaks.toml @kaushaltrivedi
+.github/workflows/ @kaushaltrivedi
+infrastructure/ @kaushaltrivedi
+
+# Architecture decisions require architect sign-off
+docs/architecture/ADRs/ @kaushaltrivedi
+docs/ARCHITECTURE.md @kaushaltrivedi
+CODE_STANDARDS.md @kaushaltrivedi

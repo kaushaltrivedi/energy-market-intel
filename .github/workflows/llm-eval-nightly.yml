@@ -1,0 +1,46 @@
+# =============================================================================
+# Nightly LLM Evaluation — RAGAS / DeepEval quality gates
+# Runs against real LLM APIs — do NOT run on every PR
+# =============================================================================
+
+name: LLM Eval (Nightly)
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 02:00 UTC daily
+  workflow_dispatch:       # Allow manual trigger
+
+jobs:
+  llm-evaluation:
+    name: RAGAS & DeepEval Quality Gates
+    runs-on: ubuntu-latest
+    environment: staging  # Uses staging secrets
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.5.0"
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: uv sync --all-packages --frozen
+
+      - name: Run LLM evaluations
+        run: uv run pytest tests/llm_eval/ -v -m llm_eval --tb=short
+        env:
+          LLM_MOCK_MODE: "false"
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          APP_ENV: "staging"
+
+      - name: Alert on failure
+        if: failure()
+        run: |
+          echo "LLM evaluation quality gates failed — check RAGAS thresholds"
+          # PagerDuty integration would fire here in production
